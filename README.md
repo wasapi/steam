@@ -22,5 +22,5 @@ git clone git@github.com:wasapi/steam.git
 
 On récupère le helper bash
 ```
-ln -s /opt/container-services/steam-headless/bash.sh ~/.bash/steam.sh 
+ln -s ~/.bash/steam.sh /opt/container-services/steam-headless/bash.sh
 ```
