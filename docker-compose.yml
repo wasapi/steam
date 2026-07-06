@@ -1,0 +1,60 @@
+---
+services:
+  steam-headless:
+    image: josh5/steam-headless:latest
+    restart: unless-stopped
+    shm_size: ${SHM_SIZE}
+    ipc: host # Could also be set to 'shareable'
+    ulimits:
+      nofile:
+        soft: 1024
+        hard: 524288
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+      - SYS_NICE
+    security_opt:
+      - seccomp:unconfined
+      - apparmor:unconfined
+
+    network_mode: host
+    hostname: ${NAME}
+    extra_hosts:
+      - "${NAME}:127.0.0.1"
+
+    ## Read all config variables from the .env file
+    environment:
+      # System
+      - TZ=${TZ}
+      - USER_LOCALES=${USER_LOCALES}
+      - DISPLAY=${DISPLAY}
+      # User
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - UMASK=${UMASK}
+      - USER_PASSWORD=${USER_PASSWORD}
+      # Mode
+      - MODE=${MODE}
+      # Local audio
+      - PULSE_SERVER=unix:/run/user/${PUID}/pulse/native
+      - PULSE_SOCKET_DIR=unix:/run/user/${PUID}/pulse/native
+      # Steam
+      - ENABLE_STEAM=${ENABLE_STEAM}
+      - STEAM_ARGS=${STEAM_ARGS}
+
+    # DEVICES:
+    devices:
+      - /dev/fuse
+      - /dev/uinput
+      # Add AMD/Intel HW accelerated video encoding/decoding devices [REQUIRED].
+      - /dev/dri/card1
+      - /dev/dri/renderD128
+    # Ensure container access to devices 13:*
+    device_cgroup_rules:
+      - 'c 13:* rmw'
+
+    volumes:
+      - ${HOME_DIR}/:/home/default/:rw
+      - ${GAMES_DIR}/:/mnt/games/:rw
+      # Pulse audio socket.
+      - /run/user/${PUID}/pulse:/run/user/${PUID}/pulse
